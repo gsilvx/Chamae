@@ -75,16 +75,39 @@ O diagrama abaixo representa a estrutura geral de classes planejada para o Chama
 
 ```mermaid
 classDiagram
-    direction TB
-
     class SistemaFila {
         -Fila fila
         -List~Atendente~ atendentes
         -List~Servico~ servicos
-        +emitirSenha(cliente, servico, prioridade) Senha
+        -List~Atendimento~ atendimentos %% NOVO
+        +emitirSenha(Cliente, Servico, Prioridade) Senha
         +chamarProximo() Senha
-        +cadastrarAtendente(atendente)
-        +cadastrarServico(servico)
+        +cancelarSenha(Senha) void %% NOVO
+        +cadastrarAtendente(Atendente) void
+        +removerAtendente(Atendente) void %% NOVO
+        +cadastrarServico(Servico) void
+        +removerServico(Servico) void %% NOVO
+    }
+
+    class Fila {
+        -List~Senha~ senhas
+        -ModoFila modo %% NOVO
+        +adicionarSenha(Senha) void
+        +chamarProxima() Senha
+        +ordenarFIFO() void
+        +ordenarPorPrioridade() void
+        +removerSenha(Senha) void
+        +getSenhas() List~Senha~ %% NOVO
+    }
+
+    class Senha {
+        -String numero
+        -LocalDateTime horarioChegada
+        -Prioridade prioridade
+        -StatusSenha status
+        -Cliente cliente %% NOVO
+        -Servico servico %% NOVO
+        +alterarStatus(StatusSenha) void
     }
 
     class Cliente {
@@ -93,53 +116,38 @@ classDiagram
         +getNome() String
     }
 
-    class Senha {
-        -String numero
-        -LocalDateTime horarioChegada
-        -Prioridade prioridade
-        -StatusSenha status
-        +alterarStatus(status)
-    }
-
-    class Fila {
-        -List~Senha~ senhas
-        +adicionarSenha(senha)
-        +chamarProxima() Senha
-        +ordenarFIFO()
-        +ordenarPorPrioridade()
-        +removerSenha(senha)
+    class Servico {
+        -int id
+        -String nome
+        -String descricao
+        +editarServico(String, String) void
     }
 
     class Atendente {
         -int id
         -String nome
         -StatusAtendente status
-        +iniciarAtendimento(senha) Atendimento
-        +finalizarAtendimento(atendimento)
-    }
-
-    class Servico {
-        -int id
-        -String nome
-        -String descricao
-        +editarServico()
+        -List~Servico~ servicosAtendidos %% NOVO
+        +iniciarAtendimento(Senha) Atendimento
+        +finalizarAtendimento(Atendimento) void
     }
 
     class Atendimento {
         -int id
         -LocalDateTime inicio
         -LocalDateTime fim
-        -long duracao
-        +iniciar()
-        +finalizar()
+        -Senha senha %% NOVO
+        -Atendente atendente %% NOVO
+        +iniciar() void
+        +finalizar() void
         +calcularDuracao() long
     }
 
     class Indicadores {
-        +calcularTempoMedioEspera()
-        +calcularDuracaoMedia()
-        +contarAtendimentos()
-        +calcularTaxaConclusao()
+        +calcularTempoMedioEspera(List~Atendimento~) double
+        +calcularDuracaoMedia(List~Atendimento~) double
+        +contarAtendimentos(List~Atendimento~) int
+        +calcularTaxaConclusao(List~Atendimento~) double
     }
 
     class Prioridade {
@@ -162,21 +170,26 @@ classDiagram
         EM_ATENDIMENTO
     }
 
+    class ModoFila {
+        <<enumeration>>
+        FIFO
+        PRIORIDADE
+    }
+
     SistemaFila *-- Fila
-    SistemaFila o-- Atendente
-    SistemaFila o-- Servico
-
+    SistemaFila o-- "0..*" Atendente
+    SistemaFila o-- "0..*" Servico
+    SistemaFila o-- "0..*" Atendimento
     Fila o-- "0..*" Senha
-
-    Senha --> Cliente
-    Senha --> Servico
+    Senha --> "1" Cliente
+    Senha --> "1" Servico
     Senha --> Prioridade
     Senha --> StatusSenha
-
-    Atendente --> StatusAtendente
-    Atendente "1" -- "0..*" Atendimento
+    Atendente "1" --> "0..*" Atendimento
     Atendimento --> "1" Senha
-
+    Atendente --> StatusAtendente
+    Atendente "0..*" --> "0..*" Servico
+    Fila --> ModoFila
     Indicadores ..> Atendimento
 ```
 
