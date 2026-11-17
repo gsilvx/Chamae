@@ -79,25 +79,37 @@ classDiagram
         -Fila fila
         -List~Atendente~ atendentes
         -List~Servico~ servicos
-        -List~Atendimento~ atendimentos %% NOVO
+        -List~Atendimento~ atendimentos
+        -int contadorSenha
+        +SistemaFila()
         +emitirSenha(Cliente, Servico, Prioridade) Senha
         +chamarProximo() Senha
-        +cancelarSenha(Senha) void %% NOVO
+        +cancelarSenha(Senha) void
         +cadastrarAtendente(Atendente) void
-        +removerAtendente(Atendente) void %% NOVO
+        +removerAtendente(Atendente) void
         +cadastrarServico(Servico) void
-        +removerServico(Servico) void %% NOVO
+        +removerServico(Servico) void
+        +getFila() Fila
+        +getAtendentes() List~Atendente~
+        +getServicos() List~Servico~
+        +getAtendimentos() List~Atendimento~
+        -gerarNumeroSenha(Prioridade) String
     }
 
     class Fila {
         -List~Senha~ senhas
-        -ModoFila modo %% NOVO
+        -ModoFila modo
+        +Fila()
         +adicionarSenha(Senha) void
+        +removerSenha(Senha) void
         +chamarProxima() Senha
         +ordenarFIFO() void
         +ordenarPorPrioridade() void
-        +removerSenha(Senha) void
-        +getSenhas() List~Senha~ %% NOVO
+        +getSenhas() List~Senha~
+        +getModo() ModoFila
+        +setModo(ModoFila) void
+        +estaVazia() boolean
+        +tamanho() int
     }
 
     class Senha {
@@ -105,49 +117,82 @@ classDiagram
         -LocalDateTime horarioChegada
         -Prioridade prioridade
         -StatusSenha status
-        -Cliente cliente %% NOVO
-        -Servico servico %% NOVO
+        -Cliente cliente
+        -Servico servico
+        +Senha(String, Prioridade, Cliente, Servico)
+        +getNumero() String
+        +getHorarioChegada() LocalDateTime
+        +getPrioridade() Prioridade
+        +getStatus() StatusSenha
+        +getCliente() Cliente
+        +getServico() Servico
         +alterarStatus(StatusSenha) void
+        +toString() String
     }
 
     class Cliente {
         -int id
         -String nome
+        +Cliente(int, String)
+        +getId() int
         +getNome() String
+        -validarNome(String) void
+        +toString() String
     }
 
     class Servico {
         -int id
         -String nome
         -String descricao
+        +Servico(int, String, String)
+        +getId() int
+        +getNome() String
+        +getDescricao() String
         +editarServico(String, String) void
+        -validarNome(String) void
+        +toString() String
     }
 
     class Atendente {
         -int id
         -String nome
         -StatusAtendente status
-        -List~Servico~ servicosAtendidos %% NOVO
+        -List~Servico~ servicosAtendidos
+        +Atendente(int, String)
+        +getId() int
+        +getNome() String
+        +getStatus() StatusAtendente
+        +getServicosAtendidos() List~Servico~
         +iniciarAtendimento(Senha) Atendimento
         +finalizarAtendimento(Atendimento) void
+        +editarAtendente(String) void
+        -validarNome(String) void
+        +toString() String
     }
 
     class Atendimento {
         -int id
         -LocalDateTime inicio
         -LocalDateTime fim
-        -Senha senha %% NOVO
-        -Atendente atendente %% NOVO
+        -Senha senha
+        -Atendente atendente
+        +Atendimento(int, Senha, Atendente)
+        +getId() int
+        +getInicio() LocalDateTime
+        +getFim() LocalDateTime
+        +getSenha() Senha
+        +getAtendente() Atendente
         +iniciar() void
         +finalizar() void
         +calcularDuracao() long
+        +calcularTempoEspera() long
     }
 
     class Indicadores {
         +calcularTempoMedioEspera(List~Atendimento~) double
         +calcularDuracaoMedia(List~Atendimento~) double
         +contarAtendimentos(List~Atendimento~) int
-        +calcularTaxaConclusao(List~Atendimento~) double
+        +calcularTaxaConclusao(List~Senha~) double
     }
 
     class Prioridade {
@@ -176,21 +221,24 @@ classDiagram
         PRIORIDADE
     }
 
-    SistemaFila *-- Fila
+    SistemaFila *-- "1" Fila
     SistemaFila o-- "0..*" Atendente
     SistemaFila o-- "0..*" Servico
     SistemaFila o-- "0..*" Atendimento
+    SistemaFila ..> Senha : cria
     Fila o-- "0..*" Senha
+    Fila --> ModoFila
     Senha --> "1" Cliente
     Senha --> "1" Servico
     Senha --> Prioridade
     Senha --> StatusSenha
-    Atendente "1" --> "0..*" Atendimento
-    Atendimento --> "1" Senha
     Atendente --> StatusAtendente
     Atendente "0..*" --> "0..*" Servico
-    Fila --> ModoFila
+    Atendente "1" --> "0..*" Atendimento
+    Atendimento --> "1" Senha
+    Atendimento --> "1" Atendente
     Indicadores ..> Atendimento
+    Indicadores ..> Senha
 ```
 
 ## Lógica de funcionamento
