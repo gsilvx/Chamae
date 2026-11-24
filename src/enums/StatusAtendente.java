@@ -1,4 +1,6 @@
 package enums;
 
-public class StatusAtendente {
+public enum StatusAtendente {
+    DISPONIVEL,
+    EM_ATENDIMENTO;
 }
